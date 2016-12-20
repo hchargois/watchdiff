@@ -1,0 +1,29 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/hchargois/go-flags",
+			"repository": "https://github.com/hchargois/go-flags",
+			"vcs": "git",
+			"revision": "3c0b5a69cda1bca403bd88a123ae8134ffbbe34c",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/jessevdk/go-flags",
+			"repository": "https://github.com/jessevdk/go-flags",
+			"vcs": "git",
+			"revision": "4e64e4a4e2552194cf594243e23aa9baf3b4297e",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/shopspring/decimal",
+			"repository": "https://github.com/shopspring/decimal",
+			"vcs": "git",
+			"revision": "d6f52241f332c63811249bd79a522406bea1a7c9",
+			"branch": "master",
+			"notests": true
+		}
+	]
+}

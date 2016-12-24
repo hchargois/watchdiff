@@ -60,11 +60,10 @@ type looper struct {
 	interval    time.Duration
 	initialized bool
 	last        decimal.Decimal
-	nextTime    time.Time
 	re          *regexp.Regexp
 }
 
-func (l *looper) printDiff(out string) {
+func (l *looper) printDiff(out string, actualInterval time.Duration) {
 	firstLine := strings.SplitN(out, "\n", 2)[0]
 	number := l.re.FindString(firstLine)
 	if number == "" {
@@ -78,23 +77,26 @@ func (l *looper) printDiff(out string) {
 		fmt.Println(firstLine)
 		return
 	}
-	fmt.Printf("%v diff: %v\n", firstLine, l.last.Sub(prev))
+	diff := l.last.Sub(prev)
+	diffF, _ := diff.Float64()
+	diffSec := diffF / (float64(actualInterval) / float64(time.Second))
+	fmt.Printf("%v (diff=%v, diff/s=%.2f)\n", firstLine, diff, diffSec)
 }
 
 func (l *looper) loop() {
 	l.re, _ = regexp.Compile(`\d+`)
-	l.nextTime = time.Now()
+	var startedAt, finishedAt time.Time
 	for {
-		l.nextTime = l.nextTime.Add(l.interval)
+		lastFinishedAt := finishedAt
+		startedAt = time.Now()
 		out := l.cmd.Run()
-		l.printDiff(out)
-		now := time.Now()
-		if now.Before(l.nextTime) {
-			time.Sleep(l.nextTime.Sub(now))
+		finishedAt = time.Now()
+		took := finishedAt.Sub(startedAt)
+		actualInterval := finishedAt.Sub(lastFinishedAt)
+		l.printDiff(out, actualInterval)
+		if took < l.interval {
+			time.Sleep(l.interval - took)
 		}
-		// oops, we overshot the time (the command took more time to run than
-		// the loop interval), we continue the loop and run the command again
-		// immediately.
 	}
 }
 

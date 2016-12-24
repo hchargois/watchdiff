@@ -60,6 +60,7 @@ type looper struct {
 	interval    time.Duration
 	initialized bool
 	last        decimal.Decimal
+	nextTime    time.Time
 	re          *regexp.Regexp
 }
 
@@ -82,11 +83,18 @@ func (l *looper) printDiff(out string) {
 
 func (l *looper) loop() {
 	l.re, _ = regexp.Compile(`\d+`)
+	l.nextTime = time.Now()
 	for {
+		l.nextTime = l.nextTime.Add(l.interval)
 		out := l.cmd.Run()
 		l.printDiff(out)
-
-		time.Sleep(l.interval)
+		now := time.Now()
+		if now.Before(l.nextTime) {
+			time.Sleep(l.nextTime.Sub(now))
+		}
+		// oops, we overshot the time (the command took more time to run than
+		// the loop interval), we continue the loop and run the command again
+		// immediately.
 	}
 }
 

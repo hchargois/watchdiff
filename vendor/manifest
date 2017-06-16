@@ -21,7 +21,7 @@
 			"importpath": "github.com/shopspring/decimal",
 			"repository": "https://github.com/shopspring/decimal",
 			"vcs": "git",
-			"revision": "d6f52241f332c63811249bd79a522406bea1a7c9",
+			"revision": "16a941821474ee3986fdbeab535a68a8aa5a85d2",
 			"branch": "master",
 			"notests": true
 		}

@@ -48,8 +48,9 @@ func NewShellCommand(cmd []string) Runnable {
 }
 
 type Options struct {
-	Interval float64 `short:"n" long:"interval" description:"Specify update interval in seconds, may have a fractional part, min. 0.1" default:"2"`
-	Exec     bool    `short:"x" long:"exec" description:"if not specified, the command is run with 'sh -c'; if specified it is executed directly"`
+	Interval float64  `short:"n" long:"interval" description:"Specify update interval in seconds, may have a fractional part, min. 0.1" default:"2"`
+	Exec     bool     `short:"x" long:"exec" description:"if not specified, the command is run with 'sh -c'; if specified it is executed directly"`
+	Eta      *float64 `short:"e" long:"eta" description:"show ETA to reach this number"`
 	Args     struct {
 		Command []string `required:"1" positional-arg-name:"command"`
 	} `positional-args:"yes" required:"yes"`
@@ -61,6 +62,19 @@ type looper struct {
 	initialized bool
 	last        decimal.Decimal
 	re          *regexp.Regexp
+	eta         *float64
+}
+
+func (l *looper) computeETA(val, diff decimal.Decimal, interval time.Duration) string {
+	if diff.Sign() == 0 {
+		return "N/A"
+	}
+	etaTarget := decimal.NewFromFloat(*l.eta)
+	intervalsToEta := etaTarget.Sub(val).Div(diff)
+	if intervalsToEta.Sign() < 0 {
+		return "N/A"
+	}
+	return time.Duration(decimal.NewFromFloat(float64(interval)).Mul(intervalsToEta).IntPart()).String()
 }
 
 func (l *looper) printDiff(out string, actualInterval time.Duration) {
@@ -80,7 +94,12 @@ func (l *looper) printDiff(out string, actualInterval time.Duration) {
 	diff := l.last.Sub(prev)
 	diffF, _ := diff.Float64()
 	diffSec := diffF / (float64(actualInterval) / float64(time.Second))
-	fmt.Printf("%v (diff=%v, diff/s=%.2f)\n", firstLine, diff, diffSec)
+	if l.eta != nil {
+		eta := l.computeETA(l.last, diff, actualInterval)
+		fmt.Printf("%v (diff=%v, diff/s=%.2f, eta=%s)\n", firstLine, diff, diffSec, eta)
+	} else {
+		fmt.Printf("%v (diff=%v, diff/s=%.2f)\n", firstLine, diff, diffSec)
+	}
 }
 
 func (l *looper) loop() {
@@ -121,6 +140,7 @@ func main() {
 	lpr := &looper{
 		cmd:      cmd,
 		interval: time.Duration(int64(opts.Interval * float64(time.Second))),
+		eta:      opts.Eta,
 	}
 	lpr.loop()
 }

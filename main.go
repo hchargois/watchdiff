@@ -84,7 +84,7 @@ func (l *looper) printDiff(out string, actualInterval time.Duration) {
 }
 
 func (l *looper) loop() {
-	l.re, _ = regexp.Compile(`\d+(?:.\d+)`)
+	l.re, _ = regexp.Compile(`\d+(?:\.\d+)?`)
 	var startedAt, finishedAt time.Time
 	for {
 		lastFinishedAt := finishedAt

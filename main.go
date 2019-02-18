@@ -74,7 +74,7 @@ func (l *looper) computeETA(val, diff decimal.Decimal, interval time.Duration) s
 	if intervalsToEta.Sign() < 0 {
 		return "N/A"
 	}
-	return time.Duration(decimal.NewFromFloat(float64(interval)).Mul(intervalsToEta).IntPart()).String()
+	return time.Duration(decimal.NewFromFloat(float64(interval)).Mul(intervalsToEta).IntPart()).Truncate(time.Second).String()
 }
 
 func (l *looper) printDiff(out string, actualInterval time.Duration) {
